@@ -1,0 +1,31 @@
+name: Get Environment Variables
+description: Return the environment specific variables to be used in workflow actions
+
+outputs:
+  unique_key:
+    description: Returns unique key based on the branch name
+    value: ${{ steps.get_environment_variables.outputs.unique_key }}
+  repository_name:
+    description: Returns the repository name
+    value: ${{ steps.get_environment_variables.outputs.repository_name }}
+  terraform_dir:
+    description: Returns the terraform directory
+    value: ${{ steps.get_environment_variables.outputs.terraform_dir }}
+
+runs:
+  using: composite
+  steps:
+    - id: get_environment_variables
+      shell: bash
+      run: |
+        echo "unique_key=$(echo -n ${{ github.head_ref }} | md5sum | cut -c1-8)" >> $GITHUB_OUTPUT
+        echo "repository_name=${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
+
+        REPOSITORY_NAME=${{ github.event.repository.name }}
+        echo "terraform_dir=.${{ env.ENVIRONMENT }}/"${REPOSITORY_NAME//-/_}"/" >> $GITHUB_OUTPUT
+    - name: Show Outputs
+      shell: bash
+      run: |
+        echo "unique_key: \"${{ steps.get_environment_variables.outputs.unique_key }}\""
+        echo "repository_name: \"${{ steps.get_environment_variables.outputs.repository_name }}\""
+        echo "terraform_dir: \"${{ steps.get_environment_variables.outputs.terraform_dir }}\""
