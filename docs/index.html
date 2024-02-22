@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Comparison</title>
+</head>
+<body>
+    <h1>Document Comparison</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="file1" id="file1">
+        <input type="file" name="file2" id="file2">
+        <button type="submit">Compare</button>
+    </form>
+    <div id="result"></div>
+    <div id="result1"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            formData.append('file1', document.getElementById('file1').files[0]);
+            formData.append('file2', document.getElementById('file2').files[0]);
+
+            try {
+                const response = await fetch('/compare-documents', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                document.getElementById('result1').innerText = JSON.stringify(data.diffs);
+                // Display diffs in HTML
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = '';
+                data.diffs.forEach(diff => {
+                    const span = document.createElement('span');
+                    span.textContent = diff[1]; // Display the text content of the diff
+                    resultDiv.appendChild(span);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
